@@ -1,7 +1,6 @@
 import $ from 'jquery';
 import api from './api';
 import store from './store';
-import item from './item';
 
 const generateItemElement = function(item) {
     let itemTitle = `<span class="shopping-item shopping-item__checked">${item.name}</span>`;
@@ -24,7 +23,7 @@ const generateItemElement = function(item) {
           <span class="button-label">delete</span>
         </button>
       </div>
-    </li>`;
+    </li>`
 };
 
 const generateShoppingItemsString = function(shoppingList) {
@@ -56,7 +55,8 @@ const handleNewItemSubmit = function() {
             .then((newItem) => {
                 store.addItem(newItem);
                 render();
-            });
+            })
+            .catch(err => console.log("error", err));
     });
 };
 
@@ -72,9 +72,18 @@ const handleDeleteItemClicked = function() {
         // get the index of the item in store.items
         const id = getItemIdFromElement(event.currentTarget);
         // delete the item
-        store.findAndDelete(id);
+        console.log(id);
+        api.deleteItem(id)
+            .then(res => {
+                store.findAndDelete(id);
+                render();
+            });
+        /*.catch(err => {
+            store.setError(err.message);
+            render();
+        });*/
         // render the updated shopping list
-        render();
+        //render();
     });
 };
 
@@ -83,7 +92,7 @@ const handleEditShoppingItemSubmit = function() {
         event.preventDefault();
         const id = getItemIdFromElement(event.currentTarget);
         const itemName = $(event.currentTarget).find('.shopping-item').val();
-        store.findAndUpdateName(id, itemName);
+        api.updateItem(id, itemName).catch(err => console.log("error", err));
         render();
     });
 };
@@ -91,8 +100,13 @@ const handleEditShoppingItemSubmit = function() {
 const handleItemCheckClicked = function() {
     $('.js-shopping-list').on('click', '.js-item-toggle', event => {
         const id = getItemIdFromElement(event.currentTarget);
-        store.findAndToggleChecked(id);
-        render();
+        const item = store.items.find(x => x.id === id);
+        console.log(item);
+        api.updateItem(id, { checked: !item.checked }).then(newItem => {
+            console.log('updated on server successfully');
+            store.findAndUpdate(id, { checked: !item.checked });
+            render();
+        }).catch(err => console.log("error", err));
     });
 };
 

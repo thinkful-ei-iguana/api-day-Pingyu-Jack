@@ -21,8 +21,22 @@ const updateItem = function(id, updateData) {
     });
 };
 
+const deleteItem = function(id) {
+    return fetch(`${BASE_URL}/items/${id}`, {
+        method: 'DELETE'
+    });
+};
+
+const createError = function(error) {
+    const newError = JSON.stringify({
+        name: error
+    });
+};
+
 export default {
     getItems,
     createItem,
-    updateItem
+    updateItem,
+    deleteItem,
+    createError
 };
